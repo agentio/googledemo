@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -19,7 +20,13 @@ const port = 3000
 const prefix = "@google"
 
 // This is the path to the IO calling interface that is configured to call Google APIs.
-const proxyUrl = "http://localhost:4848"
+func googleproxy() string {
+	p := os.Getenv("GOOGLE_PROXY")
+	if p != "" {
+		return p
+	}
+	return "http://localhost:4848"
+}
 
 func main() {
 	mux := mux.NewRouter()
@@ -43,7 +50,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	var profile Profile
 	providers := r.Header.Get("proxy-provider")
 	if strings.Contains(providers, "google") {
-		request, err := http.NewRequest("GET", proxyUrl+"/oauth2/v3/userinfo", nil)
+		request, err := http.NewRequest("GET", googleproxy()+"/oauth2/v3/userinfo", nil)
 		if err == nil {
 			request.Header.Set("proxy-session", r.Header.Get("proxy-session"))
 			response, err := http.DefaultClient.Do(request)
