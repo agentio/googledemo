@@ -1,19 +1,26 @@
-
-call "google" {
-  name     = "Google"
-  port     = 4848
-  endpoint = "www.googleapis.com"
-  auth {
-    name       = "authorization"
-    location   = "header"
-    credential = "session:google"
+calling "google" {
+  name   = "Google Identity API"
+  target = "www.googleapis.com"
+  port   = 4848
+  apply_header "authorization" {
+    secret = "session:google"
+  }
+  operation "v1-userinfo" {
+    method      = "GET"
+    path        = "/oauth2/v1/userinfo"
+    description = "Get user info"
+  }
+  operation "v3-userinfo" {
+    method      = "GET"
+    path        = "/oauth2/v3/userinfo"
+    description = "Get user info"
   }
 }
 
-host "YOUR-HOST-NAME" {
+ingress "YOUR-HOST-NAME" {
   name    = "googledemo"
-  backend = "localhost:3000"
-  oauth "google" {
+  backend = "nomad:googledemo"
+  oauth_client "google" {
     client_id        = "YOUR-CLIENT-ID"
     client_secret    = "YOUR-CLIENT-SECRET"
     authorize_url    = "https://accounts.google.com/o/oauth2/auth"
@@ -25,4 +32,3 @@ host "YOUR-HOST-NAME" {
     } 
   }
 }
-
